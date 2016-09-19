@@ -29,6 +29,7 @@
     "http://*/*",
     "https://*/*",
     "contextMenus",
+    "activeTab",
     "tabs"
   ]
 }

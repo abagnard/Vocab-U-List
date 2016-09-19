@@ -2,11 +2,11 @@ alert("Hello from your Chrome extension!");
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if( request.message === "clicked_browser_action" ) {
-      var firstHref = "http://google.com";
+      // var firstHref = "http://google.com";
+      //
+      // alert("in content script!");
 
-      console.log(firstHref);
-
-      chrome.runtime.sendMessage({"message": "open_new_tab", "url": firstHref});
+      chrome.runtime.sendMessage({"message": "open_new_tab", "url": "http://google.com"});
     }
   }
 );
