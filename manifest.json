@@ -30,6 +30,7 @@
     "https://*/*",
     "contextMenus",
     "activeTab",
-    "tabs"
+    "tabs",
+    "storage"
   ]
 }

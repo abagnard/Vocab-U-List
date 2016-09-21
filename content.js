@@ -1,32 +1,42 @@
-alert("Hello from your Chrome extension!");
-chrome.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    if( request.message === "clicked_browser_action" ) {
-      // var firstHref = "http://google.com";
-      //
-      // alert("in content script!");
-
-      chrome.runtime.sendMessage({"message": "open_new_tab", "url": "http://google.com"});
-    }
-  }
-);
-
-// document.addEventListener("mousedown", function(event){
-//     if (event.button !== 2) {
-//         return false;
+// alert("Hello from your Chrome extension!");
+// chrome.runtime.onMessage.addListener(
+//   function(request, sender, sendResponse) {
+//     alert("in content script!");
+//     if( request.message === "clicked_browser_action" ) {
+//       // var firstHref = "http://google.com";
+//       //
+//
+//       chrome.runtime.sendMessage({"message": "open_new_tab", "url": "http://google.com"});
 //     }
-//     var selected = window.getSelection().toString();
-//         if(event.button == 2 && selected != '') {
-//                 //get selected text and send request to bkgd page to create menu
-//             chrome.extension.sendMessage({
-//                    'message': 'updateContextMenu',
-//                    'selection': true});
-//         } else {
-//         chrome.extension.sendMessage({
-//                    'message': 'updateContextMenu',
-//                    'selection': false});
-//         }
-// }, true);
+//   }
+// );
+
+document.addEventListener("mousedown", function(event){
+    if (event.button === 2) {
+      // alert("in mousedown event!");
+      // let word = "";
+
+      let word = window.getSelection().toString();
+      if(word.length > 0 && word.indexOf(" ") === -1) {
+        // alert(word.indexOf(" "));
+        // alert(word.length);
+              //get selected text and send request to bkgd page to create menu
+        chrome.runtime.sendMessage({
+          'word': word,
+          'type': 'createContextMenu',
+          'valid': true
+        });
+
+      } else {
+        chrome.runtime.sendMessage({
+          'word': word,
+          'type': 'createContextMenu',
+          'valid': false
+        });
+      }
+    }
+
+}, true);
 
 // document.addEventListener('mouseup',function()
 // {
