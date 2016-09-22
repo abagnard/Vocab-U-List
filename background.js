@@ -58,12 +58,6 @@ chrome.contextMenus.onClicked.addListener(function() {
 function getDefinition(){
   let dictionaryURL = "http://www.dictionaryapi.com/api/v1/references/collegiate/xml/" + vocabWord + "?key=d3f5c888-db47-4c06-8c91-c65cc8a39137";
 
-  // $ajax({
-  //   type: "GET",
-  //   url: dictionaryURL,
-  //   data: xml
-  //
-  // });
 
   //initialize ajax call to dictionary.php to get meaning of the word.
   let xmlhttpRequest = new XMLHttpRequest();
@@ -80,13 +74,17 @@ function getDefinition(){
         wordType = word.getElementsByTagName("fl")[0].firstChild.nodeValue;
         // wordDef = word.getElementsByTagName("dt")[0].firstChild;
         for(let i = 0; i < word.getElementsByTagName("dt").length; i ++) {
-          wordDef.push(word.getElementsByTagName("dt")[i].firstChild.nodeValue);
+          // let firstLetter = word.getElementsByTagName("dt")[i].firstChild.nodeValue[0];
+          // firstLetter = firstLetter.replace(/:/gi, '');
+          if (word.getElementsByTagName("dt")[i].firstChild.nodeValue !== "") {
+            wordDef.push(word.getElementsByTagName("dt")[i].firstChild.nodeValue);
+          }
         }
         // console.log(word);
         // console.log(wordType);
         // console.log(wordDef);
         // debugger
-        // alert(`word = ${vocabWord}; type = ${wordType};  def = ${wordDef}`);
+        alert(`vocabWord = ${vocabWord}; word = ${word}; type = ${wordType};  def = ${wordDef}`);
       } else {
         alert("**ERROR** Word cannot be found in dictionary. Unable to be added to Vocab-U-List.");
       }
