@@ -124,6 +124,9 @@ function getWordInfo(word) {
               wordDef.push(formatedDef);
             }
           }
+          else {
+            alert (`We're sorry. Unable to find ${vocabWord} in dictionary -- not added to Vocab-U-List.`);
+          }
         }
       } else {
         // debugger
