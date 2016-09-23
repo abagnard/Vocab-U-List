@@ -28,7 +28,6 @@ chrome.runtime.onMessage.addListener(function(request) {
 chrome.contextMenus.onClicked.addListener(function() {
   if (valid === true) {
     dictionaryAjax();
-    alert(`you added "${vocabWord}" to your list!`);
   } else if (vocabWord === "") {
     alert("Please select a word to add to your Vocab-U-List");
   } else {
@@ -40,48 +39,41 @@ chrome.contextMenus.onClicked.addListener(function() {
 
 function saveWord() {
   // chrome.storage.sync.clear()
-    var word = vocabWord.toLowerCase(),
-        wordInfo = {
-          'type': wordType,
-          'def': wordDef
-        };
-    var jsonWordObj = {};
-    jsonWordObj[word] = wordInfo;
-    chrome.storage.sync.set(jsonWordObj, function () {
-        alert(`${word} saved!`);
-    });
-
-    chrome.storage.sync.get(null, function (data) { console.info(data) });
-    // debugger
-//     chrome.storage.sync.get(null, function(jsonWordObj) {
-//         var allKeys = Object.keys(jsonWordObj);
-//         console.log(jsonWordObj);
-//         console.log(jsonWordObj[allKeys[0]]);
-//         console.log(jsonWordObj[allKeys[0]].type);
-//         console.log(jsonWordObj[allKeys[0]].def);
-//     });
+  var word = vocabWord.toLowerCase(),
+      wordInfo = {
+        'type': wordType,
+        'def': wordDef
+      };
+  var jsonWordObj = {};
+  jsonWordObj[word] = wordInfo;
+  chrome.storage.sync.set(jsonWordObj, function () {});
+  alert(`you added "${word}" to your list!`);
+  chrome.storage.sync.get(null, function (data) { console.info(data) });
 }
-// getRandomWord();
+
 
 window.onload = function() {
+
   chrome.storage.sync.get(null, function(jsonWordObj) {
+
     var allKeys = Object.keys(jsonWordObj);
-    let randNum = Math.floor(Math.random() * (allKeys.length + 1));
+    let randNum = Math.floor(Math.random() * (allKeys.length));
     wordHtml = allKeys[randNum];
-    console.log(wordHtml);
-    // debugger
 
     chrome.storage.sync.get(wordHtml, function(jsonWordObj){
-      // debugger
       document.getElementById("htmlWord").innerHTML = wordHtml;
       document.getElementById("htmlType").innerHTML = jsonWordObj[wordHtml].type;
-      document.getElementById("htmlDef").innerHTML = jsonWordObj[wordHtml].def;
+
+      let allDefs = jsonWordObj[wordHtml].def;
+      var olList = document.createElement('ol');
+      for(var i = 0; i < allDefs.length; i++) {
+        var liItem = document.createElement('li');
+        liItem.appendChild(document.createTextNode(allDefs[i]));
+        olList.appendChild(liItem);
+      }
+      document.getElementById("htmlDef").appendChild(olList);
     });
   });
-  // console.log(wordHtml);
-    // typeHtml = jsonWordObj[allKeys[randNum]].type;
-    // defHtml = jsonWordObj[allKeys[randNum]].def;
-
 };
 
 
@@ -137,7 +129,7 @@ function getWordInfo(word) {
         }
       }
     }
-    alert(`vocabWord = ${vocabWord}; word = ${word}; type = ${wordType};  def = ${wordDef}`);
+    // alert(`vocabWord = ${vocabWord}; word = ${word}; type = ${wordType};  def = ${wordDef}`);
     saveWord();
   }
 }
@@ -145,42 +137,3 @@ function getWordInfo(word) {
 //MY DICTIONARY INFO:
 // let dictionaryAPI = "d3f5c888-db47-4c06-8c91-c65cc8a39137";
 // let apiUrl = "http://www.dictionaryapi.com/api/v1/references/collegiate/xml/hypocrite?key=[YOUR KEY GOES HERE]"
-
-
-// Changes XML to JSON
-// https://davidwalsh.name/convert-xml-json
-function xmlToJson(xml) {
-	var obj = {};
-	if (xml.nodeType === 1) {
-		if (xml.attributes.length > 0) {
-		obj["@attributes"] = {};
-			for (var j = 0; j < xml.attributes.length; j++) {
-				var attribute = xml.attributes.item(j);
-				obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
-			}
-		}
-	} else if (xml.nodeType === 3) {
-		obj = xml.nodeValue;
-    alert(obj);
-	}
-
-	// do children
-	if (xml.hasChildNodes()) {
-		for(var i = 0; i < xml.childNodes.length; i++) {
-			var item = xml.childNodes.item(i);
-			var nodeName = item.nodeName;
-			if (typeof(obj[nodeName]) === "undefined") {
-				obj[nodeName] = xmlToJson(item);
-			} else {
-				if (typeof(obj[nodeName].push) === "undefined") {
-					var old = obj[nodeName];
-					obj[nodeName] = [];
-					obj[nodeName].push(old);
-				}
-				obj[nodeName].push(xmlToJson(item));
-			}
-		}
-	}
-	return obj;
-
-}
