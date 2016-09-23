@@ -4,6 +4,10 @@ let wordType = "";
 let wordDef = [];
 let valid;
 
+let wordHtml = "";
+let defHtml = "";
+let typeHtml = "";
+
 // Set up context menu at install time.
 chrome.runtime.onInstalled.addListener(function() {
   chrome.contextMenus.create({
@@ -19,15 +23,6 @@ chrome.runtime.onMessage.addListener(function(request) {
   valid = request.valid;
 });
 
-// chrome.runtime.onMessage.addListener(function(request) {
-//   vocabWord = request.word;
-//   valid = request.valid;
-//   chrome.contextMenus.create({
-//     "title": "Add to Vocab-U-List",
-//     "contexts": ["all"],
-//     'id': 'contextMenuId'
-//   });
-// });
 
 //called when the user clicks on the contextMenus' option
 chrome.contextMenus.onClicked.addListener(function() {
@@ -53,31 +48,41 @@ function saveWord() {
     var jsonWordObj = {};
     jsonWordObj[word] = wordInfo;
     chrome.storage.sync.set(jsonWordObj, function () {
-        // alert(`${word} has been added to your Vocab-U-List, ${wordInfo}`);
-        alert(`${word} :  ${wordInfo}`);
-
+        alert(`${word} saved!`);
     });
-    // getRandomWord(jsonWordObj);
-    // chrome.storage.sync.get(null, function (data) { console.info(data) });
+
+    chrome.storage.sync.get(null, function (data) { console.info(data) });
     // debugger
-    chrome.storage.sync.get(null, function(jsonWordObj) {
-        var allKeys = Object.keys(jsonWordObj);
-        console.log(jsonWordObj);
-        console.log(jsonWordObj[allKeys[0]]);
-        console.log(jsonWordObj[allKeys[0]].type);
-        console.log(jsonWordObj[allKeys[0]].def);
-    });
+//     chrome.storage.sync.get(null, function(jsonWordObj) {
+//         var allKeys = Object.keys(jsonWordObj);
+//         console.log(jsonWordObj);
+//         console.log(jsonWordObj[allKeys[0]]);
+//         console.log(jsonWordObj[allKeys[0]].type);
+//         console.log(jsonWordObj[allKeys[0]].def);
+//     });
 }
+// getRandomWord();
 
-
-function getRandomWord(jsonWordObj){
+window.onload = function() {
   chrome.storage.sync.get(null, function(jsonWordObj) {
-      var allKeys = Object.keys(jsonWordObj);
-      let randNum = Math.floor(Math.random() * (allKeys.length + 1));
+    var allKeys = Object.keys(jsonWordObj);
+    let randNum = Math.floor(Math.random() * (allKeys.length + 1));
+    wordHtml = allKeys[randNum];
+    console.log(wordHtml);
+    // debugger
+
+    chrome.storage.sync.get(wordHtml, function(jsonWordObj){
       // debugger
-      console.log(allKeys[randNum] +": "+ jsonWordObj[allKeys[randNum]].type +" : "+ jsonWordObj[allKeys[randNum]].def);
+      document.getElementById("htmlWord").innerHTML = wordHtml;
+      document.getElementById("htmlType").innerHTML = jsonWordObj[wordHtml].type;
+      document.getElementById("htmlDef").innerHTML = jsonWordObj[wordHtml].def;
+    });
   });
-}
+  // console.log(wordHtml);
+    // typeHtml = jsonWordObj[allKeys[randNum]].type;
+    // defHtml = jsonWordObj[allKeys[randNum]].def;
+
+};
 
 
 
@@ -94,10 +99,6 @@ function dictionaryAjax(){
   xmlhttpRequest.onreadystatechange = function () {
     if (xmlhttpRequest.readyState === 4) {
       if (xmlhttpRequest.status === 200) {
-        alert("Picture dictionary lookup returned with response = " + xmlhttpRequest.responseText);
-
-        //set word type
-        //responseXML gets data as XML data
         let word = xmlhttpRequest.responseXML.firstChild.getElementsByTagName("entry")[0];
         getWordInfo(word);
       } else {
@@ -129,7 +130,6 @@ function getWordInfo(word) {
           }
         }
       } else {
-        // debugger
         let wordDt = word.getElementsByTagName("dt")[i].firstChild.nodeValue;
         let formatedDef = wordDt.replace(/:/gi, '') || wordDt;
         if (formatedDef !== "" && formatedDef !== ":" && wordDef.length < 4) {
@@ -137,16 +137,8 @@ function getWordInfo(word) {
         }
       }
     }
-    // console.log(word);
-    // console.log(wordType);
-    // console.log(wordDef);
-    // debugger
     alert(`vocabWord = ${vocabWord}; word = ${word}; type = ${wordType};  def = ${wordDef}`);
-    // if (word) {
-      saveWord();
-    // } else {
-    //   alert ("**ERROR** Word cannot be found in dictionary. Unable to be added to Vocab-U-List.");
-    // }
+    saveWord();
   }
 }
 
