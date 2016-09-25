@@ -87,7 +87,6 @@ function dictionaryAjax(){
   xmlhttpRequest.onreadystatechange = function () {
     if (xmlhttpRequest.readyState === 4) {
       if (xmlhttpRequest.status === 200) {
-        console.log(xmlhttpRequest.responseXML.firstChild.getElementsByTagName("entry")[0]);
         let word = xmlhttpRequest.responseXML.firstChild.getElementsByTagName("entry")[0];
         getWordInfo(word);
       } else {
