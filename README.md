@@ -1,5 +1,8 @@
 # Vocab-U-List
 
+#### [Chome Store][ChromeStore]
+[ChromeStore]: https://chrome.google.com/webstore/detail/vocab-u-list/lbganapgpokemopcohijojgcpjamicle
+
 ## Background
 Vocab-U-List is a Chrome Extension that helps users improve their vocabulary.  It allows users to select a word on a page that they are unfamiliar with and add it to their own personal vocabulary dictionary. Whenever the user opens a new window or tab one of the words from their vocabulary dictionary will be shown on the page along with its definition.
 
