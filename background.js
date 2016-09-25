@@ -1,12 +1,10 @@
-let wordList;
+let valid;
 let vocabWord = "";
+let tabWord = "";
 let wordType = "";
 let wordDef = [];
-let valid;
 
-let wordHtml = "";
-let defHtml = "";
-let typeHtml = "";
+
 
 // Set up context menu at install time.
 chrome.runtime.onInstalled.addListener(function() {
@@ -39,32 +37,30 @@ chrome.contextMenus.onClicked.addListener(function() {
 
 function saveWord() {
   // chrome.storage.sync.clear()
-  var word = vocabWord.toLowerCase(),
-      wordInfo = {
-        'type': wordType,
-        'def': wordDef
-      };
+  vocabWord = vocabWord.toLowerCase();
+  var wordInfo = {'type': wordType, 'def': wordDef};
   var jsonWordObj = {};
-  jsonWordObj[word] = wordInfo;
+  jsonWordObj[vocabWord] = wordInfo;
+
   chrome.storage.sync.set(jsonWordObj, function () {});
-  alert(`you added "${word}" to your list!`);
-  chrome.storage.sync.get(null, function (data) { console.info(data) });
+  alert(`you added "${vocabWord}" to your list!`);
 }
 
 
+//called when new tab gets opened
 window.onload = function() {
-
   chrome.storage.sync.get(null, function(jsonWordObj) {
-
+    //get all words in storage
     var allKeys = Object.keys(jsonWordObj);
     let randNum = Math.floor(Math.random() * (allKeys.length));
-    wordHtml = allKeys[randNum];
+    tabWord = allKeys[randNum];
 
-    chrome.storage.sync.get(wordHtml, function(jsonWordObj){
-      document.getElementById("htmlWord").innerHTML = wordHtml;
-      document.getElementById("htmlType").innerHTML = jsonWordObj[wordHtml].type;
+    chrome.storage.sync.get(tabWord, function(jsonWordObj){
+      //get random word's info from storage
+      document.getElementById("htmlWord").innerHTML = tabWord;
+      document.getElementById("htmlType").innerHTML = jsonWordObj[tabWord].type;
 
-      let allDefs = jsonWordObj[wordHtml].def;
+      let allDefs = jsonWordObj[tabWord].def;
       var olList = document.createElement('ol');
       for(var i = 0; i < allDefs.length; i++) {
         var liItem = document.createElement('li');
@@ -91,6 +87,7 @@ function dictionaryAjax(){
   xmlhttpRequest.onreadystatechange = function () {
     if (xmlhttpRequest.readyState === 4) {
       if (xmlhttpRequest.status === 200) {
+        console.log(xmlhttpRequest.responseXML.firstChild.getElementsByTagName("entry")[0]);
         let word = xmlhttpRequest.responseXML.firstChild.getElementsByTagName("entry")[0];
         getWordInfo(word);
       } else {
@@ -100,6 +97,8 @@ function dictionaryAjax(){
   };
 }
 
+
+
 function getWordInfo(word) {
   if (!word.getElementsByTagName("fl")[0]) {   //if no word type returned, word not in dictionary
     alert (`We're sorry. Unable to find ${vocabWord} in dictionary -- not added to Vocab-U-List.`);
@@ -107,6 +106,7 @@ function getWordInfo(word) {
     wordType = word.getElementsByTagName("fl")[0].firstChild.nodeValue;
     wordDef = [];
 
+    //traverse through tag tree to find definition ("dt" or "un" tags)
     for(let i = 0; i < word.getElementsByTagName("dt").length; i ++) {
       if (!word.getElementsByTagName("dt")[i].firstChild.nodeValue){
         for(let j = 0; j < word.getElementsByTagName("dt")[i].getElementsByTagName("un").length; j++) {
@@ -129,11 +129,9 @@ function getWordInfo(word) {
         }
       }
     }
-    // alert(`vocabWord = ${vocabWord}; word = ${word}; type = ${wordType};  def = ${wordDef}`);
     saveWord();
   }
 }
 
-//MY DICTIONARY INFO:
-// let dictionaryAPI = "d3f5c888-db47-4c06-8c91-c65cc8a39137";
-// let apiUrl = "http://www.dictionaryapi.com/api/v1/references/collegiate/xml/hypocrite?key=[YOUR KEY GOES HERE]"
+
+// chrome.storage.sync.get(null, function (data) { console.info(data) });
