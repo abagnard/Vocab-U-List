@@ -1,6 +1,5 @@
 let valid;
 let vocabWord = "";
-let tabWord = "";
 let wordType = "";
 let wordDef = [];
 
@@ -36,41 +35,43 @@ chrome.contextMenus.onClicked.addListener(function() {
 
 
 function saveWord() {
-  // chrome.storage.sync.clear()
+  chrome.storage.sync.clear()
   vocabWord = vocabWord.toLowerCase();
   var wordInfo = {'type': wordType, 'def': wordDef};
   var jsonWordObj = {};
   jsonWordObj[vocabWord] = wordInfo;
 
-  chrome.storage.sync.set(jsonWordObj, function () {});
-  alert(`you added "${vocabWord}" to your list!`);
+  chrome.storage.sync.set(jsonWordObj, function () {
+    alert(`you added "${vocabWord}" to your list!`);
+  });
 }
 
 
-//called when new tab gets opened
-window.onload = function() {
-  chrome.storage.sync.get(null, function(jsonWordObj) {
-    //get all words in storage
-    var allKeys = Object.keys(jsonWordObj);
-    let randNum = Math.floor(Math.random() * (allKeys.length));
-    tabWord = allKeys[randNum];
-
-    chrome.storage.sync.get(tabWord, function(jsonWordObj){
-      //get random word's info from storage
-      document.getElementById("htmlWord").innerHTML = tabWord;
-      document.getElementById("htmlType").innerHTML = jsonWordObj[tabWord].type;
-
-      let allDefs = jsonWordObj[tabWord].def;
-      var olList = document.createElement('ol');
-      for(var i = 0; i < allDefs.length; i++) {
-        var liItem = document.createElement('li');
-        liItem.appendChild(document.createTextNode(allDefs[i]));
-        olList.appendChild(liItem);
-      }
-      document.getElementById("htmlDef").appendChild(olList);
-    });
-  });
-};
+// //called when new tab gets opened
+// window.onload = function() {
+//   //document.addEventListener("DOMContentLoaded")
+//   chrome.storage.sync.get(null, function(jsonWordObj) {
+//     //get all words in storage
+//     var allKeys = Object.keys(jsonWordObj);
+//     let randNum = Math.floor(Math.random() * (allKeys.length));
+//     let tabWord = allKeys[randNum];
+//
+//     chrome.storage.sync.get(tabWord, function(jsonWordObj){
+//       //get random word's info from storage
+//       document.getElementById("htmlWord").innerHTML = tabWord;
+//       document.getElementById("htmlType").innerHTML = jsonWordObj[tabWord].type;
+//
+//       let allDefs = jsonWordObj[tabWord].def;
+//       var olList = document.createElement('ol');
+//       for(var i = 0; i < allDefs.length; i++) {
+//         var liItem = document.createElement('li');
+//         liItem.appendChild(document.createTextNode(allDefs[i]));
+//         olList.appendChild(liItem);
+//       }
+//       document.getElementById("htmlDef").appendChild(olList);
+//     });
+//   });
+// };
 
 
 
