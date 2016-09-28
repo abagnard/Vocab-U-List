@@ -35,7 +35,7 @@ chrome.contextMenus.onClicked.addListener(function() {
 
 
 function saveWord() {
-  chrome.storage.sync.clear()
+  // chrome.storage.sync.clear()
   vocabWord = vocabWord.toLowerCase();
   var wordInfo = {'type': wordType, 'def': wordDef};
   var jsonWordObj = {};
@@ -88,6 +88,7 @@ function dictionaryAjax(){
   xmlhttpRequest.onreadystatechange = function () {
     if (xmlhttpRequest.readyState === 4) {
       if (xmlhttpRequest.status === 200) {
+        alert(xmlhttpRequest.responseText);
         let word = xmlhttpRequest.responseXML.firstChild.getElementsByTagName("entry")[0];
         getWordInfo(word);
       } else {
@@ -105,32 +106,57 @@ function getWordInfo(word) {
   } else {
     wordType = word.getElementsByTagName("fl")[0].firstChild.nodeValue;
     wordDef = [];
-
     //traverse through tag tree to find definition ("dt" or "un" tags)
     for(let i = 0; i < word.getElementsByTagName("dt").length; i ++) {
-      if (!word.getElementsByTagName("dt")[i].firstChild.nodeValue){
-        for(let j = 0; j < word.getElementsByTagName("dt")[i].getElementsByTagName("un").length; j++) {
-          if (word.getElementsByTagName("dt")[i].getElementsByTagName("un")[j].firstChild.nodeValue){
-            let wordUn = word.getElementsByTagName("dt")[i].getElementsByTagName("un")[j].firstChild.nodeValue;
-            let formatedDef = wordUn.replace(/:/gi, '') || wordUn;
-            if (formatedDef !== "" && formatedDef !== ":" && wordDef.length < 4) {
-              wordDef.push(formatedDef);
-            }
-          }
-          else {
-            alert (`We're sorry. Unable to find ${vocabWord} in dictionary -- not added to Vocab-U-List.`);
+      // if (!word.getElementsByTagName("dt")[i].firstChild.nodeValue){
+      //   for(let j = 0; j < word.getElementsByTagName("dt")[i].getElementsByTagName("un").length; j++) {
+      //     if (word.getElementsByTagName("dt")[i].getElementsByTagName("un")[j].firstChild.nodeValue){
+      //
+      //       let wordUn = word.getElementsByTagName("dt")[i].getElementsByTagName("un")[j].firstChild.nodeValue;
+      //       let formatedDef = wordUn.replace(/:/gi, '') || wordUn;
+      //       if (formatedDef !== "" && formatedDef !== ":" && wordDef.length < 4) {
+      //         wordDef.push(formatedDef);
+      //       }
+      //     }
+      //     else {
+      //       alert (`We're sorry. Unable to find ${vocabWord} in dictionary -- not added to Vocab-U-List.`);
+      //     }
+      //   }
+      // } else {
+        let wordDt = "";
+        let wantedNodes = ["fw", "d_link"];
+        // let wordDt = word.getElementsByTagName("dt")[i].firstChild.nodeValue;
+        // debugger
+        for (let j = 0; j < word.getElementsByTagName("dt")[i].childNodes.length; j++){
+          let child = word.getElementsByTagName("dt")[i].childNodes[j];
+          if (child.nodeName === "#text"){
+            wordDt += `${child.nodeValue} `;
+            // wordVal = " " + child.nodeValue;
+          } else if (wantedNodes.includes(child.nodeName)) {
+            wordDt += `${child.innerHTML} `;
+            // wordVal = " " + child.innerHTML;
+          } else if (child.nodeName === "un"){
+            wordDt += `${child.firstChild.nodeValue} `;
+          } else {
+            wordDt += "";
           }
         }
-      } else {
-        let wordDt = word.getElementsByTagName("dt")[i].firstChild.nodeValue;
+        // if (word.getElementsByTagName("dt")[i].getElementsByTagName("fw").length > 0 || word.getElementsByTagName("dt")[i].getElementsByTagName("d_link").length){
+        //   debugger
+          // let wordEnd = word.getElementsByTagName("dt")[i].getElementsByTagName("fw")[0].firstChild.nodeValue;
+          // wordDt = `${wordDt} ${wordEnd}`;
+          // wordDt = word.getElementsByTagName("dt")[i].textContent;
+
         let formatedDef = wordDt.replace(/:/gi, '') || wordDt;
-        if (formatedDef !== "" && formatedDef !== ":" && wordDef.length < 4) {
+        // debugger
+        let validWord = formatedDef.split("").every(el => ["", " ", ":"].includes(el));
+        if (!validWord && formatedDef.length > 0 && wordDef.length < 4) {
           wordDef.push(formatedDef);
         }
       }
     }
     saveWord();
-  }
+  // }
 }
 
 
