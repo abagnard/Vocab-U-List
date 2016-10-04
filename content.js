@@ -1,7 +1,11 @@
 document.addEventListener("mousedown", function(event){
     if (event.button === 2) {
       let word = window.getSelection().toString();
-      if(word.length > 0 && word.indexOf(" ") === -1) {
+      if (word[word.length - 1] === " ") {
+        word = word.slice(0, word.length - 1);
+      }
+
+      if(word.length > 0 && checkWord(word)) {
         chrome.runtime.sendMessage({
           'word': word,
           'valid': true
@@ -14,3 +18,13 @@ document.addEventListener("mousedown", function(event){
       }
     }
 }, true);
+
+
+function checkWord(word) {
+ return (
+   (word.indexOf(" ") === -1) &&
+   (word.indexOf(",") === -1) &&
+   (word.indexOf(".") === -1) &&
+   (word.indexOf('"') === -1)
+ );
+}

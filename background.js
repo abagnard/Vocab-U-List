@@ -4,7 +4,6 @@ let wordType = "";
 let wordDef = [];
 
 
-
 // Set up context menu at install time.
 chrome.runtime.onInstalled.addListener(function() {
   chrome.contextMenus.create({
@@ -34,47 +33,6 @@ chrome.contextMenus.onClicked.addListener(function() {
 });
 
 
-function saveWord() {
-  // chrome.storage.sync.clear()
-  vocabWord = vocabWord.toLowerCase();
-  var wordInfo = {'type': wordType, 'def': wordDef};
-  var jsonWordObj = {};
-  jsonWordObj[vocabWord] = wordInfo;
-
-  chrome.storage.sync.set(jsonWordObj, function () {
-    alert(`you added "${vocabWord}" to your list!`);
-  });
-}
-
-
-// //called when new tab gets opened
-// window.onload = function() {
-//   //document.addEventListener("DOMContentLoaded")
-//   chrome.storage.sync.get(null, function(jsonWordObj) {
-//     //get all words in storage
-//     var allKeys = Object.keys(jsonWordObj);
-//     let randNum = Math.floor(Math.random() * (allKeys.length));
-//     let tabWord = allKeys[randNum];
-//
-//     chrome.storage.sync.get(tabWord, function(jsonWordObj){
-//       //get random word's info from storage
-//       document.getElementById("htmlWord").innerHTML = tabWord;
-//       document.getElementById("htmlType").innerHTML = jsonWordObj[tabWord].type;
-//
-//       let allDefs = jsonWordObj[tabWord].def;
-//       var olList = document.createElement('ol');
-//       for(var i = 0; i < allDefs.length; i++) {
-//         var liItem = document.createElement('li');
-//         liItem.appendChild(document.createTextNode(allDefs[i]));
-//         olList.appendChild(liItem);
-//       }
-//       document.getElementById("htmlDef").appendChild(olList);
-//     });
-//   });
-// };
-
-
-
 //called when word successfully added to list
 function dictionaryAjax(){
   let dictionaryURL = "http://www.dictionaryapi.com/api/v1/references/collegiate/xml/" + vocabWord + "?key=d3f5c888-db47-4c06-8c91-c65cc8a39137";
@@ -89,10 +47,18 @@ function dictionaryAjax(){
     if (xmlhttpRequest.readyState === 4) {
       if (xmlhttpRequest.status === 200) {
         alert(xmlhttpRequest.responseText);
-        let word = xmlhttpRequest.responseXML.firstChild.getElementsByTagName("entry")[0];
-        getWordInfo(word);
+
+        //if response contains "suggestion" tag , word is not in dictionary
+        if (xmlhttpRequest.responseXML.firstChild.getElementsByTagName("suggestion")[0]) {
+          alert (`We're sorry, "${vocabWord}" not found.`);
+        } else {
+          debugger
+          let word = xmlhttpRequest.responseXML.firstChild.getElementsByTagName("entry")[0];
+          getWordInfo(word);
+        }
+
       } else {
-        alert("**ERROR** Word cannot be found in dictionary. Unable to be added to Vocab-U-List.");
+        alert("**SERVER ERROR**");
       }
     }
   };
@@ -101,62 +67,50 @@ function dictionaryAjax(){
 
 
 function getWordInfo(word) {
-  if (!word.getElementsByTagName("fl")[0]) {   //if no word type returned, word not in dictionary
-    alert (`We're sorry. Unable to find ${vocabWord} in dictionary -- not added to Vocab-U-List.`);
-  } else {
-    wordType = word.getElementsByTagName("fl")[0].firstChild.nodeValue;
-    wordDef = [];
-    //traverse through tag tree to find definition ("dt" or "un" tags)
-    for(let i = 0; i < word.getElementsByTagName("dt").length; i ++) {
-      // if (!word.getElementsByTagName("dt")[i].firstChild.nodeValue){
-      //   for(let j = 0; j < word.getElementsByTagName("dt")[i].getElementsByTagName("un").length; j++) {
-      //     if (word.getElementsByTagName("dt")[i].getElementsByTagName("un")[j].firstChild.nodeValue){
-      //
-      //       let wordUn = word.getElementsByTagName("dt")[i].getElementsByTagName("un")[j].firstChild.nodeValue;
-      //       let formatedDef = wordUn.replace(/:/gi, '') || wordUn;
-      //       if (formatedDef !== "" && formatedDef !== ":" && wordDef.length < 4) {
-      //         wordDef.push(formatedDef);
-      //       }
-      //     }
-      //     else {
-      //       alert (`We're sorry. Unable to find ${vocabWord} in dictionary -- not added to Vocab-U-List.`);
-      //     }
-      //   }
-      // } else {
-        let wordDt = "";
-        let wantedNodes = ["fw", "d_link"];
-        // let wordDt = word.getElementsByTagName("dt")[i].firstChild.nodeValue;
-        // debugger
-        for (let j = 0; j < word.getElementsByTagName("dt")[i].childNodes.length; j++){
-          let child = word.getElementsByTagName("dt")[i].childNodes[j];
-          if (child.nodeName === "#text"){
-            wordDt += `${child.nodeValue} `;
-            // wordVal = " " + child.nodeValue;
-          } else if (wantedNodes.includes(child.nodeName)) {
-            wordDt += `${child.innerHTML} `;
-            // wordVal = " " + child.innerHTML;
-          } else if (child.nodeName === "un"){
-            wordDt += `${child.firstChild.nodeValue} `;
-          } else {
-            wordDt += "";
-          }
-        }
-        // if (word.getElementsByTagName("dt")[i].getElementsByTagName("fw").length > 0 || word.getElementsByTagName("dt")[i].getElementsByTagName("d_link").length){
-        //   debugger
-          // let wordEnd = word.getElementsByTagName("dt")[i].getElementsByTagName("fw")[0].firstChild.nodeValue;
-          // wordDt = `${wordDt} ${wordEnd}`;
-          // wordDt = word.getElementsByTagName("dt")[i].textContent;
+  debugger
+  wordType = word.getElementsByTagName("fl")[0].firstChild.nodeValue;
+  wordDef = [];
 
-        let formatedDef = wordDt.replace(/:/gi, '') || wordDt;
-        // debugger
-        let validWord = formatedDef.split("").every(el => ["", " ", ":"].includes(el));
-        if (!validWord && formatedDef.length > 0 && wordDef.length < 4) {
-          wordDef.push(formatedDef);
-        }
+  //traverse through tag tree to find definition ("dt" or "un" tags)
+  for(let i = 0; i < word.getElementsByTagName("dt").length; i ++) {
+    let wordDt = "";
+    let wantedNodes = ["fw", "d_link"];
+    for (let j = 0; j < word.getElementsByTagName("dt")[i].childNodes.length; j++){
+      let child = word.getElementsByTagName("dt")[i].childNodes[j];
+      if (child.nodeName === "#text"){
+        wordDt += `${child.nodeValue} `;
+      } else if (wantedNodes.includes(child.nodeName)) {
+        wordDt += `${child.innerHTML} `;
+      } else if (child.nodeName === "un"){
+        wordDt += `${child.firstChild.nodeValue} `;
+      } else {
+        wordDt += "";
       }
     }
+
+    let formatedDef = wordDt.replace(/:/gi, '') || wordDt;
+    let validWord = formatedDef.split("").every(el => ["", " ", ":"].includes(el));
+
+    if (!validWord && formatedDef.length > 0 && wordDef.length < 4) {
+      wordDef.push(formatedDef);
+    }
+  }
+  if (wordDef.length > 0) {
     saveWord();
-  // }
+  }
+}
+
+
+function saveWord() {
+  // chrome.storage.sync.clear()
+  vocabWord = vocabWord.toLowerCase();
+  var wordInfo = {'type': wordType, 'def': wordDef};
+  var jsonWordObj = {};
+  jsonWordObj[vocabWord] = wordInfo;
+
+  chrome.storage.sync.set(jsonWordObj, function () {
+    alert(`you added "${vocabWord}" to your list!`);
+  });
 }
 
 
